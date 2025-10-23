@@ -2013,5 +2013,8 @@ def thong_ke_dhbc(id_tro_choi):
     return render_template('thong_ke_dhbc.html', tro_choi=tro_choi, danh_sach_ket_qua=danh_sach_ket_qua)
 
 # --- Chạy ứng dụng ---
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    # Lấy cổng từ biến môi trường của Render, nếu không có thì mặc định là 5000
+    port = int(os.environ.get("PORT", 5000)) 
+    # Chạy app trên host 0.0.0.0 để Render có thể truy cập
+    app.run(host='0.0.0.0', port=port)
