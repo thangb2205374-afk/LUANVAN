@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Kết quả: {{ tro_choi.tenTroChoi }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-sm">
+                    <a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a><span class="mx-1 text-gray-400">/</span>
+                    <a href="{{ url_for('chi_tiet_lop', id_lop=tro_choi.idLop) }}" class="text-blue-600 hover:text-blue-800">{{ tro_choi.tenLop }}</a><span class="mx-1 text-gray-400">/</span>
+                    <a href="{{ url_for('danh_sach_tro_choi_dhbc_gv', id_lop=tro_choi.idLop) }}" class="text-blue-600 hover:text-blue-800">Trò chơi ĐHBC</a><span class="mx-1 text-gray-400">/</span>
+                    <span class="text-gray-600">Kết quả</span>
+                </div>
+                <div><a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a></div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto py-10">
+        <div class="mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-900">Bảng Xếp Hạng</h1>
+            <p class="mt-1 text-lg text-gray-600">Trò chơi: <strong>{{ tro_choi.tenTroChoi }}</strong></p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hạng</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Học sinh</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Điểm số</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thời gian hoàn thành</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày chơi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for kq in danh_sach_ket_qua %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ loop.index }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ kq.hoVaTen }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-bold">{{ kq.diemSo }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if kq.thoiGianHoanThanh %}
+                                {{ '%02d:%02d'|format(kq.thoiGianHoanThanh // 60, kq.thoiGianHoanThanh % 60) }}
+                            {% else %}
+                                Không ghi nhận
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ kq.ngayChoi.strftime('%d-%m-%Y %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-gray-500">Chưa có học sinh nào hoàn thành trò chơi này.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Nhập Câu Hỏi Tự Động</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="flex items-center justify-between h-16"><div class="text-sm"><a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('tao_bai_kiem_tra', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">Bài Kiểm Tra</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('ngan_hang_cau_hoi', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">Ngân Hàng Câu Hỏi</a><span class="mx-1 text-gray-400">/</span><span class="text-gray-600">Nhập Tự Động</span></div><div><a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a></div></div></div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="text-center mb-10"><h1 class="text-4xl font-extrabold text-gray-900">Tạo Câu Hỏi Tự Động từ File .txt</h1></div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message p-4 mb-6 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-blue-100 text-blue-700 {% endif %}" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="grid lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">1. Tải lên file .txt</h2>
+                <form action="{{ url_for('nhap_cau_hoi_tu_dong', id_lop=lop_hoc.id) }}" method="post" enctype="multipart/form-data" class="space-y-6">
+                    <div>
+                        <label for="file_txt" class="block mb-2 text-sm font-medium text-gray-900">Chọn file .txt (hỗ trợ nhiều loại câu hỏi)</label>
+                        <input type="file" name="file_txt" id="file_txt" accept=".txt" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg text-lg">Bắt đầu Import</button>
+                </form>
+            </div>
+            
+            <div class="bg-gray-50 p-8 rounded-lg border-2 border-dashed">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">2. Hướng dẫn định dạng file</h2>
+                <p class="text-gray-600 mb-4">Các khối câu hỏi phải được ngăn cách với nhau bằng <strong>một dòng trống</strong>.</p>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Loại 1: Trắc nghiệm (Mặc định)</h3>
+                        <pre class="bg-gray-200 mt-2 p-4 rounded-md text-sm text-gray-800"><code>Lệnh nào dùng để in ra màn hình?
+A. input()
+B. print()
+C. output()
+D. echo()
+ANSWER: B</code></pre>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Loại 2: Trả lời ngắn</h3>
+                        <pre class="bg-gray-200 mt-2 p-4 rounded-md text-sm text-gray-800"><code>TYPE: TraLoiNgan
+Thủ đô của Việt Nam là gì?
+ANSWER: Hà Nội</code></pre>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Loại 3: Đúng/Sai nhiều ý</h3>
+                        <pre class="bg-gray-200 mt-2 p-4 rounded-md text-sm text-gray-800"><code>TYPE: DungSaiNhieuY
+Xác định tính đúng/sai của các nhận định:
+Mặt Trời mọc hướng Đông
+Mặt Trời lặn hướng Đông
+Trái Đất quay quanh Mặt Trời
+Mặt Trăng tự phát sáng
+ANSWER: D,S,D,S</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            
+            flashMessages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.transition = 'opacity 0.5s ease';
+                    message.style.opacity = '0';
+                    
+                    setTimeout(function() {
+                        message.remove();
+                    }, 500);
+
+                }, 2000); 
+            });
+        });
+    </script>
+</body>
+</html>

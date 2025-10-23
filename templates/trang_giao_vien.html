@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang Giáo Viên</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <span class="font-bold text-xl text-blue-600">Bảng điều khiển</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">Chào, {{ session.ho_va_ten }}</span>
+                    <a href="/dang-xuat" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash-message p-4 mb-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-blue-100 text-blue-700 {% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Tạo Lớp Học Mới</h2>
+            <form action="/tao-lop" method="post" class="flex items-center space-x-4">
+                <input type="text" name="ten_lop" placeholder="Nhập tên lớp học..." required
+                       class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Tạo Lớp
+                </button>
+            </form>
+        </div>
+
+        <div>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Danh Sách Lớp Học Của Bạn</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for lop in danh_sach_lop %}
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">{{ lop.tenLop }}</h3>
+                        <div class="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mb-4">
+                            Mã lớp: <span class="font-mono text-blue-700">{{ lop.maLop }}</span>
+                        </div>
+                        <p class="text-gray-600 text-sm">Ngày tạo: {{ lop.ngayTao.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-4 flex justify-between items-center">
+                        <div class="flex space-x-2">
+                             <button onclick="moModalSua('{{ lop.id }}', '{{ lop.tenLop }}')" class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-bold py-2 px-3 rounded">
+                                Sửa
+                            </button>
+                            <form action="/xoa-lop/{{ lop.id }}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa lớp này không?');">
+                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-sm font-bold py-2 px-3 rounded">
+                                    Xóa
+                                </button>
+                            </form>
+                        </div>
+                        <a href="/chi-tiet-lop/{{ lop.id }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded">
+                            Vào Lớp
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-gray-500">Bạn chưa tạo lớp học nào. Hãy tạo một lớp mới ở trên!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-sua" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-4">Chỉnh Sửa Tên Lớp</h2>
+            <form id="form-sua" method="post">
+                <input type="text" id="ten-lop-moi" name="ten_lop_moi" required
+                       class="w-full shadow appearance-none border rounded py-2 px-3 text-gray-700 mb-4 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="dongModalSua()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                        Hủy
+                    </button>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const modal = document.getElementById('modal-sua');
+        const formSua = document.getElementById('form-sua');
+        const inputTenLopMoi = document.getElementById('ten-lop-moi');
+
+        function moModalSua(idLop, tenLopHienTai) {
+            // Cập nhật action của form để gửi đến đúng route
+            formSua.action = `/sua-lop/${idLop}`;
+            // Điền tên lớp hiện tại vào ô input
+            inputTenLopMoi.value = tenLopHienTai;
+            // Hiển thị modal
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function dongModalSua() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+
+        // Đợi toàn bộ trang tải xong
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tìm tất cả các phần tử có class là 'flash-message'
+        const flashMessages = document.querySelectorAll('.flash-message');
+        
+        flashMessages.forEach(function(message) {
+            // Đặt thời gian chờ là 2 giây (2000 mili giây)
+            setTimeout(function() {
+                // Thêm hiệu ứng mờ dần (transition) bằng CSS
+                message.style.transition = 'opacity 0.5s ease';
+                message.style.opacity = '0';
+                
+                // Sau khi hiệu ứng mờ kết thúc (500ms), xóa hẳn phần tử đi
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+
+            }, 2000); 
+        });
+    });
+    </script>
+</body>
+</html>

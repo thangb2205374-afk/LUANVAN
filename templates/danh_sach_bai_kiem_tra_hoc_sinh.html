@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bài Kiểm Tra - {{ lop_hoc.tenLop }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div>
+                    <a href="{{ url_for('trang_hoc_sinh') }}" class="font-bold text-lg text-blue-600 hover:text-blue-800">Lớp của tôi</a>
+                    <span class="mx-2 text-gray-500">/</span>
+                    <a href="{{ url_for('chi_tiet_lop_hoc_sinh', id_lop=lop_hoc.id) }}" class="text-lg text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a>
+                    <span class="mx-2 text-gray-500">/</span>
+                    <span class="text-lg text-gray-700">Bài kiểm tra</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">Chào, {{ session.ho_va_ten }}</span>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-10">Danh sách bài kiểm tra</h1>
+        <div class="space-y-4">
+            {% for bkt in danh_sach_bkt %}
+            <div class="bg-white p-6 rounded-lg shadow-lg flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">{{ bkt.tenBaiKiemTra }}</h2>
+                    <p class="text-sm text-gray-500 mt-1">Thời gian: {{ bkt.thoiGianLamBai }} phút | Tối đa: {{ bkt.soLanLamBaiToiDa }} lần</p>
+                </div>
+                <div>
+                    {% if bkt.soLanDaLam >= bkt.soLanLamBaiToiDa %}
+                        <span class="bg-gray-400 text-white font-bold py-2 px-4 rounded cursor-not-allowed">
+                            Đã hết lượt ({{ bkt.soLanDaLam }}/{{ bkt.soLanLamBaiToiDa }})
+                        </span>
+                    {% else %}
+                        <a href="{{ url_for('bat_dau_kiem_tra', id_lop=lop_hoc.id, id_bkt=bkt.id) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Vào làm bài (còn {{ bkt.soLanLamBaiToiDa - bkt.soLanDaLam }} lượt)
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-12 bg-white rounded-lg shadow-lg"><p class="text-gray-500">Chưa có bài kiểm tra nào.</p></div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

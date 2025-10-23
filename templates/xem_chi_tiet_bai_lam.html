@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi Tiết Bài Làm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-sm">
+                    <a href="{{ url_for('trang_hoc_sinh') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('chi_tiet_lop_hoc_sinh', id_lop=ket_qua.idLop) }}" class="text-blue-600 hover:text-blue-800">{{ ket_qua.tenLop }}</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('bai_da_lam', id_lop=ket_qua.idLop) }}" class="text-blue-600 hover:text-blue-800">Bài đã làm</a><span class="mx-1 text-gray-400">/</span><span class="text-gray-600">Chi tiết</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">Chào, {{ session.ho_va_ten }}</span>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        
+        <div class="bg-white p-8 rounded-lg shadow-lg mb-8 text-center">
+            <h1 class="text-3xl font-extrabold text-gray-900">{{ ket_qua.tenBaiKiemTra }}</h1>
+            <p class="mt-2 text-gray-600">Lớp: {{ ket_qua.tenLop }}</p>
+            <div class="mt-4">
+                <p class="text-lg text-gray-600">Điểm số cuối cùng</p>
+                <p class="text-6xl font-extrabold text-blue-600">
+                    {{ '%.2f'|format(ket_qua.diemSo) }} / {{ '%.2f'|format(tong_diem_toi_da) }}
+                </p>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Đáp án chi tiết</h2>
+        <div class="space-y-6">
+            {% for cau_hoi in danh_sach_cau_hoi %}
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="border-b pb-4 mb-4 flex justify-between items-center">
+                    <p class="font-bold text-gray-800">Câu {{ loop.index }}:</p>
+                    <span class="text-sm font-bold px-3 py-1 rounded-full
+                                {% if cau_hoi.diemDatDuoc == cau_hoi.diem %} bg-green-100 text-green-800
+                                {% elif cau_hoi.diemDatDuoc > 0 %} bg-yellow-100 text-yellow-800
+                                {% else %} bg-red-100 text-red-800 {% endif %}">
+                        {{ '%.2f'|format(cau_hoi.diemDatDuoc) }} / {{ '%.2f'|format(cau_hoi.diem) }} đ
+                    </span>
+                </div>
+                <div class="text-gray-800 text-lg mb-4">{{ cau_hoi.noiDung | safe }}</div>
+
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-t pt-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3">Bài làm của bạn</h4>
+                        {% if cau_hoi.loaiCauHoi == 'TracNghiem' %}
+                            <div class="space-y-2">
+                                {% for pa in cau_hoi.phuongAn %}
+                                    <div class="flex items-start p-3 rounded-md border 
+                                                {% if pa.daChon and pa.laDapAnDung %} bg-green-100 border-green-400
+                                                {% elif pa.daChon and not pa.laDapAnDung %} bg-red-100 border-red-400
+                                                {% endif %}">
+                                        <span class="mr-3 mt-1">
+                                            {% if pa.daChon %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {{ 'text-green-600' if pa.laDapAnDung else 'text-red-500' }}" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2" /></svg>
+                                            {% endif %}
+                                        </span>
+                                        <div class="text-gray-700">{{ pa.noiDung | safe }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% elif cau_hoi.loaiCauHoi == 'DungSaiNhieuY' %}
+                            <div class="space-y-2">
+                                {% for pa in cau_hoi.phuongAn %}
+                                    {% set lua_chon_cua_hs = cau_hoi.lua_chon_dung_sai_cua_hs.get(pa.id) %}
+                                    {% set hs_chon_dung = (lua_chon_cua_hs == 'Dung') %}
+                                    {% set dap_an_dung = pa.laDapAnDung %}
+                                    <div class="flex justify-between items-center p-3 rounded-md border
+                                                {% if lua_chon_cua_hs and hs_chon_dung == dap_an_dung %} bg-green-100 border-green-400
+                                                {% elif lua_chon_cua_hs and hs_chon_dung != dap_an_dung %} bg-red-100 border-red-400
+                                                {% endif %}">
+                                        <p class="text-gray-700">{{ pa.noiDung | safe }}</p>
+                                        <span class="font-bold text-sm ml-4 whitespace-nowrap
+                                                     {% if lua_chon_cua_hs and hs_chon_dung == dap_an_dung %} text-green-700
+                                                     {% elif lua_chon_cua_hs and hs_chon_dung != dap_an_dung %} text-red-700
+                                                     {% else %} text-gray-500 {% endif %}">
+                                            {{ lua_chon_cua_hs if lua_chon_cua_hs else 'Chưa chọn' }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% elif cau_hoi.loaiCauHoi == 'TraLoiNgan' %}
+                            {% set da_dung = cau_hoi.traLoiNganCuaHS and cau_hoi.phuongAn and cau_hoi.traLoiNganCuaHS.lower() == cau_hoi.phuongAn[0].noiDung.lower() %}
+                            <div class="p-3 border rounded-lg {{ 'bg-green-100 border-green-400' if da_dung else 'bg-red-100 border-red-400' }}">
+                                <p class="text-gray-800">{{ cau_hoi.traLoiNganCuaHS if cau_hoi.traLoiNganCuaHS else "Không trả lời" }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3">Đáp án đúng</h4>
+                        {% if cau_hoi.loaiCauHoi in ['TracNghiem', 'DungSaiNhieuY'] %}
+                            <div class="space-y-2">
+                                {% for pa in cau_hoi.phuongAn %}
+                                    <div class="flex items-start p-3 rounded-md border 
+                                                {% if pa.laDapAnDung %} bg-green-100 border-green-400 font-bold {% endif %}">
+                                        <span class="mr-3 mt-1">
+                                            {% if pa.laDapAnDung %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                            {% elif cau_hoi.loaiCauHoi == 'DungSaiNhieuY' and not pa.laDapAnDung %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.607a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                            {% else %}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2" /></svg>
+                                            {% endif %}
+                                        </span>
+                                        <div class="text-gray-700">{{ pa.noiDung | safe }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% elif cau_hoi.loaiCauHoi == 'TraLoiNgan' %}
+                            <div class="p-3 border rounded-lg bg-green-100 border-green-400">
+                                <p class="font-bold text-gray-800">{{ cau_hoi.phuongAn[0].noiDung if cau_hoi.phuongAn else 'Không có đáp án' }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="text-center mt-8">
+                <a href="{{ url_for('bai_da_lam', id_lop=ket_qua.idLop) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">
+                    Quay lại
+                </a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

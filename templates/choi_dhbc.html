@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chơi: {{ tro_choi.tenTroChoi }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .answer-slot, .letter-char {
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: bold;
+            border-radius: 8px;
+            user-select: none;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .answer-slot {
+            background-color: #4A5568;
+            border: 2px solid #2D3748;
+            color: white;
+            cursor: pointer;
+        }
+        .letter-char {
+            background-color: #E2E8F0;
+            border: 2px solid #CBD5E0;
+            cursor: pointer;
+        }
+        .letter-char:hover {
+            transform: scale(1.1);
+            background-color: #CBD5E0;
+        }
+        .used {
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-200 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <audio id="correct-sound" src="{{ url_for('static', filename='sounds/correct.mp3') }}" preload="auto"></audio>
+    <audio id="incorrect-sound" src="{{ url_for('static', filename='sounds/incorrect.mp3') }}" preload="auto"></audio>
+
+    <div id="game-container" class="w-full max-w-2xl text-center">
+        <div class="my-4 flex justify-between items-center bg-white p-2 rounded-lg shadow-md">
+            <p class="text-gray-700">Câu hỏi: <span id="cau-hien-tai" class="font-bold">1</span>/<span id="tong-so-cau" class="font-bold">0</span></p>
+            {% if tro_choi.thoiGianChoi %}
+            <div class="flex items-center text-xl font-bold text-red-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span id="dong-ho">--:--</span>
+            </div>
+            {% endif %}
+            <p class="text-xl font-bold text-blue-600">Điểm: <span id="diem-so">0</span></p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-xl">
+            <img id="anh-cau-hoi" src="" alt="Hình ảnh câu hỏi" class="mx-auto max-h-64 rounded-md mb-4">
+            
+            <p id="goi-y" class="text-gray-600 italic mb-4 h-6"></p>
+
+            <div id="answer-slots" class="flex justify-center flex-wrap gap-2 my-6 min-h-[60px]"></div>
+
+            <div id="letter-bank" class="flex justify-center flex-wrap gap-2 p-4 bg-gray-100 rounded-lg"></div>
+
+            <p id="thong-bao" class="mt-4 h-6 font-bold"></p>
+            <button id="check-answer-btn" class="mt-4 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-lg">Kiểm Tra</button>
+        </div>
+    </div>
+
+    <div id="end-game-container" class="hidden text-center bg-white p-8 rounded-lg shadow-2xl">
+        <h2 class="text-4xl font-extrabold text-blue-600">HOÀN THÀNH!</h2>
+        <p class="mt-4 text-xl">Điểm cuối cùng của bạn là:</p>
+        <p id="diem-cuoi-cung" class="text-7xl font-bold my-4"></p>
+        <a href="{{ url_for('danh_sach_tro_choi_dhbc_hs', id_lop=tro_choi.idLop) }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+            Quay lại danh sách
+        </a>
+    </div>
+
+    <script>
+        const cauHoiData = {{ cau_hoi_json | safe }};
+        const thoiGianChoiPhut = {{ tro_choi.thoiGianChoi or 'null' }};
+        let cauHienTaiIndex = 0;
+        let diemSo = 0;
+        let gameTimer;
+        const thoiGianBatDau = new Date().getTime();
+
+        const anhCauHoiEl = document.getElementById('anh-cau-hoi');
+        const answerSlotsEl = document.getElementById('answer-slots');
+        const letterBankEl = document.getElementById('letter-bank');
+        const checkBtn = document.getElementById('check-answer-btn');
+        const thongBaoEl = document.getElementById('thong-bao');
+        const tongSoCauEl = document.getElementById('tong-so-cau');
+        const cauHienTaiEl = document.getElementById('cau-hien-tai');
+        const diemSoEl = document.getElementById('diem-so');
+        const gameContainer = document.getElementById('game-container');
+        const endGameContainer = document.getElementById('end-game-container');
+        const diemCuoiCungEl = document.getElementById('diem-cuoi-cung');
+        const dongHoEl = document.getElementById('dong-ho');
+        const correctSound = document.getElementById('correct-sound');
+        const incorrectSound = document.getElementById('incorrect-sound');
+        const goiYEl = document.getElementById('goi-y');
+
+        function loadCauHoi(index) {
+            correctSound.pause();
+            correctSound.currentTime = 0;
+            incorrectSound.pause();
+            incorrectSound.currentTime = 0;
+
+            if (index >= cauHoiData.length) {
+                endGame(false);
+                return;
+            }
+            const cauHoi = cauHoiData[index];
+            const dapAn = cauHoi.dapAn.toUpperCase();
+
+            anhCauHoiEl.src = `/static/uploads/dhbc/${cauHoi.tenFileAnh}`;
+            cauHienTaiEl.textContent = index + 1;
+            thongBaoEl.textContent = '';
+            goiYEl.textContent = cauHoi.goiY || '';
+
+            answerSlotsEl.innerHTML = '';
+            for (const char of dapAn) {
+                const slot = document.createElement('div');
+                if (char === ' ') {
+                    slot.className = 'w-4';
+                    slot.dataset.isSpace = 'true';
+                } else {
+                    slot.className = 'answer-slot';
+                    slot.addEventListener('click', returnLetterToBank);
+                }
+                answerSlotsEl.appendChild(slot);
+            }
+
+            letterBankEl.innerHTML = '';
+            const dapAnNoSpace = dapAn.replace(/\s/g, '');
+            let letterPool = dapAnNoSpace.split('');
+            letterPool.sort(() => Math.random() - 0.5);
+
+            letterPool.forEach((char, i) => {
+                const letterDiv = document.createElement('div');
+                letterDiv.className = 'letter-char';
+                letterDiv.textContent = char;
+                letterDiv.id = `letter-${i}`;
+                letterDiv.addEventListener('click', moveLetterToSlot);
+                letterBankEl.appendChild(letterDiv);
+            });
+        }
+        
+        function moveLetterToSlot(event) {
+            const letterChar = event.target;
+            const emptySlot = answerSlotsEl.querySelector('.answer-slot:not([data-source-id])');
+            if (emptySlot) {
+                emptySlot.textContent = letterChar.textContent;
+                emptySlot.dataset.sourceId = letterChar.id;
+                letterChar.classList.add('used');
+            }
+        }
+
+        function returnLetterToBank(event) {
+            const slot = event.target;
+            if (slot.textContent !== '' && slot.classList.contains('answer-slot')) {
+                const sourceId = slot.dataset.sourceId;
+                document.getElementById(sourceId).classList.remove('used');
+                slot.textContent = '';
+                delete slot.dataset.sourceId;
+            }
+        }
+        
+        function resetAnswerSlots() {
+            const filledSlots = answerSlotsEl.querySelectorAll('.answer-slot[data-source-id]');
+            filledSlots.forEach(slot => {
+                const sourceId = slot.dataset.sourceId;
+                if (sourceId) {
+                    document.getElementById(sourceId).classList.remove('used');
+                    slot.textContent = '';
+                    delete slot.dataset.sourceId;
+                }
+            });
+        }
+
+        checkBtn.addEventListener('click', function() {
+            let userAnswer = '';
+            answerSlotsEl.childNodes.forEach(slot => {
+                if(slot.dataset.isSpace === 'true') {
+                    userAnswer += ' ';
+                } else {
+                    userAnswer += slot.textContent || '_';
+                }
+            });
+            userAnswer = userAnswer.trim();
+            const dapAnDung = cauHoiData[cauHienTaiIndex].dapAn.toUpperCase();
+
+            if (userAnswer === dapAnDung) {
+                correctSound.currentTime = 0;
+                correctSound.play();
+                diemSo += 10;
+                diemSoEl.textContent = diemSo;
+                thongBaoEl.textContent = 'Chính xác!';
+                thongBaoEl.className = 'mt-4 h-6 text-green-600 font-bold';
+                
+                setTimeout(() => {
+                    cauHienTaiIndex++;
+                    loadCauHoi(cauHienTaiIndex);
+                }, 5000);
+            } else {
+                incorrectSound.currentTime = 0;
+                incorrectSound.play();
+                thongBaoEl.textContent = 'Sai rồi, thử lại nhé!';
+                thongBaoEl.className = 'mt-4 h-6 text-red-700 font-bold';
+
+                setTimeout(() => {
+                    resetAnswerSlots();
+                    thongBaoEl.textContent = '';
+                }, 1200);
+            }
+        });
+        
+        function endGame(hetGio = false) { 
+            clearInterval(gameTimer); 
+            if (hetGio) {
+                alert("Đã hết thời gian làm bài!");
+            }
+            gameContainer.classList.add('hidden');
+            diemCuoiCungEl.textContent = diemSo;
+            endGameContainer.classList.remove('hidden');
+            const thoiGianKetThuc = new Date().getTime();
+            const thoiGianHoanThanh = Math.round((thoiGianKetThuc - thoiGianBatDau) / 1000);
+            fetch("{{ url_for('luu_ket_qua_dhbc') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id_tro_choi: {{ tro_choi.id }},
+                    diem_so: diemSo,
+                    thoi_gian_hoan_thanh: thoiGianHoanThanh
+                })
+            });
+        }
+        function startTimer(durationInMinutes) {
+             const thoiGianKetThuc = new Date().getTime() + durationInMinutes * 60 * 1000;
+            gameTimer = setInterval(function() {
+                const bayGio = new Date().getTime();
+                const thoiGianConLai = thoiGianKetThuc - bayGio;
+                const phut = Math.floor((thoiGianConLai % (1000 * 60 * 60)) / (1000 * 60));
+                const giay = Math.floor((thoiGianConLai % (1000 * 60)) / 1000);
+                if (thoiGianConLai < 0) {
+                    clearInterval(gameTimer);
+                    dongHoEl.textContent = "Hết giờ";
+                    endGame(true);
+                } else {
+                    dongHoEl.textContent = `${phut.toString().padStart(2, '0')}:${giay.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+        
+        // --- KHỞI ĐỘNG GAME ---
+        tongSoCauEl.textContent = cauHoiData.length;
+        if (thoiGianChoiPhut) {
+            startTimer(thoiGianChoiPhut);
+        }
+        loadCauHoi(cauHienTaiIndex);
+    </script>
+</body>
+</html>

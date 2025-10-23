@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Ngân Hàng Câu Hỏi: {{ lop_hoc.tenLop }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-sm">
+                    <a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <a href="{{ url_for('tao_bai_kiem_tra', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">Bài Kiểm Tra</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <span class="text-gray-600">Ngân Hàng Câu Hỏi</span>
+                </div>
+                <div>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900">Ngân Hàng Câu Hỏi</h1>
+            <p class="mt-2 text-lg text-gray-600">Chọn một phương thức để quản lý kho câu hỏi của bạn</p>
+        </div>
+        
+        <div class="space-y-8">
+            
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">Tạo câu hỏi thủ công ⌨️</h2>
+                <p class="text-gray-600 mb-4">
+                    Sử dụng trình soạn thảo trên web để tự nhập nội dung câu hỏi, các phương án trả lời và chọn đáp án đúng. Phù hợp khi cần thêm số lượng ít câu hỏi.
+                </p>
+                <a href="{{ url_for('nhap_cau_hoi_thu_cong', id_lop=lop_hoc.id) }}" 
+                   class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                    Chuyển đến trang nhập thủ công
+                </a>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">Tạo câu hỏi tự động từ file 🚀</h2>
+                <p class="text-gray-600 mb-4">
+                    Tải lên một file .txt hoặc .csv đã được soạn sẵn theo mẫu để hệ thống tự động nhận diện và thêm hàng loạt câu hỏi vào ngân hàng.
+                </p>
+                <a href="{{ url_for('nhap_cau_hoi_tu_dong', id_lop=lop_hoc.id) }}"
+                   class="inline-block bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                   Chuyển đến trang nhập tự động
+                </a>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">Xem và quản lý câu hỏi đã tạo 🗑️</h2>
+                <p class="text-gray-600 mb-4">
+                    Xem lại toàn bộ danh sách câu hỏi trong ngân hàng của bạn. Bạn có thể chỉnh sửa lại nội dung hoặc xóa những câu hỏi không còn sử dụng.
+                </p>
+                <a href="{{ url_for('xem_cau_hoi_da_tao', id_lop=lop_hoc.id) }}"
+                   class="inline-block bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors">
+                    Xem danh sách câu hỏi
+                </a>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đang làm bài: {{ bai_kiem_tra.tenBaiKiemTra }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+            <h1 class="text-xl font-bold text-gray-800">{{ bai_kiem_tra.tenBaiKiemTra }}</h1>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span id="dong-ho" class="ml-2 text-lg font-bold text-red-600">--:--</span>
+                </div>
+                <button form="form-lam-bai" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Nộp Bài
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        <form id="form-lam-bai" action="{{ url_for('nop_bai') }}" method="post">
+            <input type="hidden" name="id_ket_qua" value="{{ id_ket_qua }}">
+            <input type="hidden" name="id_bkt" value="{{ bai_kiem_tra.id }}">
+            <input type="hidden" name="id_lop" value="{{ id_lop }}">
+
+            <div class="space-y-8">
+                {% for cau_hoi in danh_sach_cau_hoi %}
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="flex justify-between items-start mb-4">
+                        <p class="font-bold text-gray-800">Câu {{ loop.index }}:</p>
+                    </div>
+                    <div class="text-gray-800 text-lg mb-4">{{ cau_hoi.noiDung | safe }}</div>
+                    
+                    {% if cau_hoi.loaiCauHoi == 'TracNghiem' %}
+                    <div class="space-y-3">
+                        {% for pa in cau_hoi.phuongAn %}
+                        <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                            <input type="radio" name="cau_hoi_{{ cau_hoi.id }}" value="{{ pa.id }}" class="h-4 w-4 text-blue-600 border-gray-300" required>
+                            <span class="ml-3 text-gray-700">{{ pa.noiDung | safe }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% elif cau_hoi.loaiCauHoi == 'DungSaiNhieuY' %}
+                    <div class="space-y-4">
+                        {% for pa in cau_hoi.phuongAn %}
+                        <div class="p-3 border rounded-lg">
+                            <p class="text-gray-700 mb-3">{{ pa.noiDung | safe }}</p>
+                            <div class="flex items-center space-x-6">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="cau_hoi_{{ cau_hoi.id }}_{{ pa.id }}" value="Dung" required class="h-4 w-4 text-blue-600">
+                                    <span class="ml-2 text-green-700 font-medium">Đúng</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="cau_hoi_{{ cau_hoi.id }}_{{ pa.id }}" value="Sai" required class="h-4 w-4 text-red-600">
+                                    <span class="ml-2 text-red-700 font-medium">Sai</span>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% elif cau_hoi.loaiCauHoi == 'TraLoiNgan' %}
+                    <div>
+                        <input type="text" name="cau_hoi_{{ cau_hoi.id }}" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nhập câu trả lời của bạn..." required>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+    </main>
+
+    <script>
+        // Script đồng hồ đếm ngược giữ nguyên
+        const thoiGianLamBai = {{ bai_kiem_tra.thoiGianLamBai }};
+        const thoiGianKetThuc = new Date().getTime() + thoiGianLamBai * 60 * 1000;
+        const dongHoElement = document.getElementById('dong-ho');
+        const formLamBai = document.getElementById('form-lam-bai');
+
+        const dongHo = setInterval(function() {
+            const bayGio = new Date().getTime();
+            const thoiGianConLai = thoiGianKetThuc - bayGio;
+
+            const phut = Math.floor((thoiGianConLai % (1000 * 60 * 60)) / (1000 * 60));
+            const giay = Math.floor((thoiGianConLai % (1000 * 60)) / 1000);
+
+            dongHoElement.textContent = `${phut.toString().padStart(2, '0')}:${giay.toString().padStart(2, '0')}`;
+
+            if (thoiGianConLai < 0) {
+                clearInterval(dongHo);
+                dongHoElement.textContent = "Hết giờ";
+                alert("Đã hết thời gian làm bài, hệ thống sẽ tự động nộp bài của bạn!");
+                formLamBai.submit();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

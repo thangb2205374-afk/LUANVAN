@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lớp: {{ lop_hoc.tenLop }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div>
+                    <a href="{{ url_for('trang_hoc_sinh') }}" class="font-bold text-lg text-blue-600 hover:text-blue-800">Lớp của tôi</a>
+                    <span class="mx-2 text-gray-500">/</span>
+                    <span class="text-lg text-gray-700">{{ lop_hoc.tenLop }}</span>
+                </div>
+                <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-extrabold text-gray-900">{{ lop_hoc.tenLop }}</h1>
+                <p class="mt-2 text-lg text-gray-600">Giáo viên: {{ lop_hoc.tenGiaoVien }}</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                
+                <a href="{{ url_for('lam_bai_kiem_tra', id_lop=lop_hoc.id) }}" 
+                   class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Bài kiểm tra 📝</h2>
+                    <p class="text-gray-600">Xem danh sách các bài kiểm tra bạn cần hoàn thành.</p>
+                    <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+                        Bắt đầu làm bài →
+                    </span>
+                </a>
+
+                <a href="{{ url_for('bai_da_lam', id_lop=lop_hoc.id) }}"
+                   class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Bài đã làm & Kết quả 💯</h2>
+                    <p class="text-gray-600">Xem lại các bài kiểm tra bạn đã nộp và kết quả chi tiết.</p>
+                    <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+                        Xem lại bài →
+                    </span>
+                </a>
+
+                <a href="{{ url_for('danh_sach_tro_choi_dhbc_hs', id_lop=lop_hoc.id) }}"
+   class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+    <h2 class="text-2xl font-bold text-gray-800 mb-2">Trò chơi 🖼️</h2>
+    <p class="text-gray-600">Tham gia các trò chơi Đuổi Hình Bắt Chữ để ôn tập.</p>
+    <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+        Xem danh sách trò chơi →
+    </span>
+</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

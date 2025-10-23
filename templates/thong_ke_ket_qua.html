@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thống Kê: {{ bai_kiem_tra.tenBaiKiemTra }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="flex items-center justify-between h-16"><div class="text-sm"><a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('tao_bai_kiem_tra', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">Bài Kiểm Tra</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('danh_sach_bai_kiem_tra', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">Danh Sách</a><span class="mx-1 text-gray-400">/</span><span class="text-gray-600">Thống Kê</span></div><div><a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a></div></div></div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-900">{{ bai_kiem_tra.tenBaiKiemTra }}</h1>
+            <p class="mt-1 text-lg text-gray-600">Thống kê kết quả bài làm</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center"><p class="text-sm text-gray-500">Số lượt làm bài</p><p class="text-3xl font-bold text-gray-800">{{ danh_sach_ket_qua|length }}</p></div>
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center"><p class="text-sm text-gray-500">Điểm trung bình</p><p class="text-3xl font-bold text-blue-600">{{ '%.2f'|format(diem_trung_binh) }}</p></div>
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center"><p class="text-sm text-gray-500">Điểm cao nhất</p><p class="text-3xl font-bold text-green-600">{{ '%.2f'|format(diem_cao_nhat) }}</p></div>
+            <div class="bg-white p-6 rounded-lg shadow-lg text-center"><p class="text-sm text-gray-500">Điểm thấp nhất</p><p class="text-3xl font-bold text-red-600">{{ '%.2f'|format(diem_thap_nhat) }}</p></div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg">
+                <h3 class="text-xl font-bold mb-4">Phổ điểm</h3>
+                <canvas id="bieuDoPhoDiem"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Bảng điểm chi tiết</h3>
+                    <button id="xuat-pdf" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-sm">Xuất PDF</button>
+                </div>
+                <div class="max-h-96 overflow-y-auto">
+                    <table id="bang-diem" class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th class="py-2 text-left text-sm font-semibold text-gray-600">Học sinh</th>
+                                <th class="py-2 text-left text-sm font-semibold text-gray-600">Thời gian nộp</th>
+                                <th class="py-2 text-center text-sm font-semibold text-gray-600">Thời gian làm</th>
+                                <th class="py-2 text-right text-sm font-semibold text-gray-600">Điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            {% for kq in danh_sach_ket_qua %}
+                            <tr>
+                                <td class="py-2 text-gray-800">{{ kq.hoVaTen or "[Học sinh đã bị xóa]" }}</td>
+                                <td class="py-2 text-gray-600 text-xs">{{ kq.thoiGianNopBai.strftime('%H:%M %d-%m-%Y') }}</td>
+                                <td class="py-2 text-center text-gray-600 text-sm">
+                                    {% if kq.thoiGianLamBai is not none %}
+                                        {{ '%02d:%02d'|format(kq.thoiGianLamBai // 60, kq.thoiGianLamBai % 60) }}
+                                    {% else %}
+                                        --:--
+                                    {% endif %}
+                                </td>
+                                <td class="py-2 text-right font-bold text-blue-600">{{ '%.2f'|format(kq.diemSo) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="py-4 text-center text-gray-500">Chưa có học sinh nào làm bài.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('bieuDoPhoDiem').getContext('2d');
+            const chartData = { labels: {{ chart_labels | safe }}, datasets: [{ label: 'Số lượng học sinh', data: {{ chart_data | safe }}, backgroundColor: 'rgba(59, 130, 246, 0.5)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1 }] };
+            const config = { type: 'bar', data: chartData, options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } } };
+            new Chart(ctx, config);
+
+            document.getElementById('xuat-pdf').addEventListener('click', function() {
+                function removeDiacritics(str) {
+                    if (str === null || str === undefined) return '';
+                    return str.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                const tenBaiKiemTra = removeDiacritics({{ bai_kiem_tra.tenBaiKiemTra | tojson }});
+                const tenLop = removeDiacritics({{ lop_hoc.tenLop | tojson }});
+
+                doc.setFontSize(18);
+                doc.text("Bang Diem Chi Tiet", 105, 22, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Bai kiem tra: ${tenBaiKiemTra}`, 105, 30, { align: 'center' });
+                doc.text(`Lop: ${tenLop}`, 105, 36, { align: 'center' });
+                
+                // [CẬP NHẬT] Thêm cột mới vào header của PDF
+                const table = document.getElementById('bang-diem');
+                const head = [['Hoc sinh', 'Thoi gian nop', 'Thoi gian lam', 'Diem']];
+                const body = [];
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const rowData = [];
+                    if (row.querySelectorAll('td').length > 1) {
+                        row.querySelectorAll('td').forEach(cell => {
+                            rowData.push(removeDiacritics(cell.innerText));
+                        });
+                        body.push(rowData);
+                    }
+                });
+
+                doc.autoTable({
+                    head: head,
+                    body: body,
+                    startY: 45,
+                    theme: 'grid',
+                    headStyles: { fillColor: [29, 78, 216], textColor: 255 },
+                    // [CẬP NHẬT] Căn chỉnh cột cho PDF
+                    columnStyles: {
+                        0: { halign: 'left' },
+                        1: { halign: 'left' },
+                        2: { halign: 'center' },
+                        3: { halign: 'right' }
+                    }
+                });
+
+                const fileName = `bang-diem-${tenBaiKiemTra.replace(/ /g, '-')}.pdf`;
+                doc.save(fileName);
+            });
+        });
+    </script>
+</body>
+</html>

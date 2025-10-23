@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo Trò Chơi Đuổi Hình Bắt Chữ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            transition: border-color 0.3s, background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Đảm bảo không có gì tràn ra ngoài */
+        }
+        .drop-zone.drag-over {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .preview-img {
+            max-height: 100%; /* Luôn nằm gọn trong drop-zone */
+            max-width: 100%;
+            object-fit: contain; /* Giữ tỷ lệ ảnh */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-sm">
+                    <a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="font-bold text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <a href="{{ url_for('danh_sach_tro_choi_dhbc_gv', id_lop=lop_hoc.id) }}" class="font-bold text-blue-600 hover:text-blue-800">Trò chơi ĐHBC</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <span class="text-gray-600">Tạo Mới</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">Chào, {{ session.ho_va_ten }}</span>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Tạo Trò Chơi Đuổi Hình Bắt Chữ Mới</h1>
+        
+        <form id="game-form" method="post" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-lg">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="md:col-span-3">
+                    <label for="ten_tro_choi" class="block text-lg font-bold text-gray-800 mb-2">Tên trò chơi:</label>
+                    <input type="text" name="ten_tro_choi" id="ten_tro_choi" required class="w-full p-2 border rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="thoi_gian_choi" class="block text-sm font-medium text-gray-700">Thời gian chơi (phút):</label>
+                    <input type="number" name="thoi_gian_choi" id="thoi_gian_choi" placeholder="Bỏ trống nếu không giới hạn" class="mt-1 w-full p-2 border rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="mat_khau_choi" class="block text-sm font-medium text-gray-700">Mật khẩu:</label>
+                    <input type="text" name="mat_khau_choi" id="mat_khau_choi" placeholder="Bỏ trống nếu không cần" class="mt-1 w-full p-2 border rounded-md shadow-sm">
+                </div>
+            </div>
+            <hr class="my-8">
+            <div id="danh-sach-cau-hoi" class="space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Các câu hỏi:</h2>
+            </div>
+            <div class="mt-8">
+                <button type="button" id="them-cau-hoi" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    + Thêm câu hỏi
+                </button>
+            </div>
+            <div class="mt-10 text-right">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg text-lg">
+                    Lưu Trò Chơi
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <template id="template-cau-hoi">
+        <div class="cau-hoi-item border-2 border-dashed p-4 rounded-lg relative">
+            <button type="button" class="xoa-cau-hoi absolute -top-3 -right-3 text-red-500 bg-white rounded-full h-7 w-7 flex items-center justify-center border shadow-sm hover:bg-red-50">&times;</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">1. Kéo & Thả Ảnh hoặc Nhấn để Chọn</label>
+                    <label class="drop-zone w-full h-32 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 p-2">
+                        <div class="placeholder-content flex flex-col items-center justify-center text-center">
+                            <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
+                            <p class="text-sm text-gray-500"><span class="font-semibold">Nhấn để tải lên</span> hoặc kéo thả</p>
+                        </div>
+                        <img class="preview-img hidden" src="#" alt="Xem trước ảnh"/>
+                        <input type="file" name="anh_cau_hoi[]" accept="image/*" required class="hidden image-input">
+                    </label>
+                </div> 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">2. Nhập đáp án:</label>
+                    <input type="text" name="dap_an[]" required class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                     <label class="block text-sm font-medium text-gray-700 mb-1">3. Gợi ý (tùy chọn):</label>
+                     <input type="text" name="goi_y[]" placeholder="Ví dụ: Đây là một loại trái cây" class="w-full p-2 border rounded-md">
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... Các hàm và event listener khác giữ nguyên ...
+            const btnThem = document.getElementById('them-cau-hoi');
+            const container = document.getElementById('danh-sach-cau-hoi');
+            const template = document.getElementById('template-cau-hoi');
+
+            function themCauHoiMoi() {
+                const clone = template.content.cloneNode(true);
+                container.appendChild(clone);
+            }
+
+            themCauHoiMoi(); 
+            btnThem.addEventListener('click', themCauHoiMoi);
+
+            container.addEventListener('click', function(event) {
+                if (event.target.classList.contains('xoa-cau-hoi')) {
+                    event.target.closest('.cau-hoi-item').remove();
+                }
+            });
+
+            // [SỬA LỖI] Cập nhật logic để ẩn/hiện nội dung
+            function handleFile(file, dropZone) {
+                if (!file.type.startsWith('image/')){
+                    alert('Chỉ chấp nhận file hình ảnh!');
+                    return;
+                }
+                
+                const previewImg = dropZone.querySelector('.preview-img');
+                const fileInput = dropZone.querySelector('.image-input');
+                const placeholderContent = dropZone.querySelector('.placeholder-content');
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                    previewImg.src = reader.result;
+                    previewImg.classList.remove('hidden'); // Hiện ảnh
+                    placeholderContent.classList.add('hidden'); // Ẩn placeholder
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            async function handleUrl(url, dropZone) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Không thể tải ảnh từ URL.');
+                    
+                    const blob = await response.blob();
+                    if (!blob.type.startsWith('image/')) throw new Error('URL không trỏ đến một file ảnh hợp lệ.');
+
+                    const fileName = url.substring(url.lastIndexOf('/') + 1) || 'image.png';
+                    const imageFile = new File([blob], fileName, { type: blob.type });
+
+                    handleFile(imageFile, dropZone);
+
+                } catch (error) {
+                    console.error('Lỗi khi xử lý URL ảnh:', error);
+                    alert('Đã xảy ra lỗi khi kéo ảnh từ URL. Vui lòng thử lại hoặc tải ảnh từ máy tính.');
+                }
+            }
+            
+            // ... Các event listener cho kéo thả giữ nguyên ...
+            container.addEventListener('dragover', (e) => { e.preventDefault(); const dropZone = e.target.closest('.drop-zone'); if (dropZone) dropZone.classList.add('drag-over'); });
+            container.addEventListener('dragleave', (e) => { const dropZone = e.target.closest('.drop-zone'); if (dropZone) dropZone.classList.remove('drag-over'); });
+            container.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const dropZone = e.target.closest('.drop-zone');
+                if (!dropZone) return;
+                dropZone.classList.remove('drag-over');
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleFile(e.dataTransfer.files[0], dropZone);
+                } else {
+                    const html = e.dataTransfer.getData('text/html');
+                    const match = html.match(/<img.*?src=["'](.*?)"/);
+                    const imageUrl = match ? match[1] : null;
+                    if (imageUrl) {
+                        handleUrl(imageUrl, dropZone);
+                    } else {
+                        alert('Không tìm thấy ảnh hợp lệ để kéo vào.');
+                    }
+                }
+            });
+            
+            // Xử lý khi click để chọn file
+            container.addEventListener('change', function(event) {
+                if (event.target.classList.contains('image-input')) {
+                    const fileInput = event.target;
+                    const dropZone = fileInput.closest('.drop-zone');
+                    if (fileInput.files && fileInput.files[0]) {
+                        handleFile(fileInput.files[0], dropZone);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

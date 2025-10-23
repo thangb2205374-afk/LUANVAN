@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lí học sinh: {{ lop_hoc.tenLop }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div>
+                    <a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-lg text-blue-600 hover:text-blue-800">Lớp của tôi</a>
+                    <span class="mx-2 text-gray-500">/</span>
+                    <a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="text-lg text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a>
+                    <span class="mx-2 text-gray-500">/</span>
+                    <span class="text-lg text-gray-700">Quản lí học sinh</span>
+                </div>
+                <div>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message p-4 mb-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-blue-100 text-blue-700 {% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Thêm học sinh từ file CSV</h2>
+            <form action="{{ url_for('import_csv', id_lop=lop_hoc.id) }}" method="post" enctype="multipart/form-data" class="flex items-center space-x-4">
+                <input type="file" name="file_csv" accept=".csv" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
+                    Import học sinh
+                </button>
+            </form>
+            <p class="text-sm text-gray-500 mt-2">
+                <strong>Lưu ý:</strong> File CSV phải có 5 cột theo thứ tự: 
+                <code class="bg-gray-200 p-1 rounded">tendangnhap;matkhau;hovaten;email;gioitinh</code> và phân cách bằng dấu chấm phẩy (;).
+            </p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="px-6 py-4">
+                <h2 class="text-2xl font-bold text-gray-800">Danh sách học sinh ({{ danh_sach_hs|length }})</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Họ và Tên</th>
+                            <th scope="col" class="px-6 py-3">Giới tính</th>
+                            <th scope="col" class="px-6 py-3">Email</th>
+                            <th scope="col" class="px-6 py-3">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hs in danh_sach_hs %}
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">{{ hs.hoVaTen }}</td>
+                            <td class="px-6 py-4">{{ hs.gioiTinh }}</td>
+                            <td class="px-6 py-4">{{ hs.email }}</td>
+                            <td class="px-6 py-4 flex space-x-2">
+                                <button 
+                                    class="js-edit-button bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold py-1 px-2 rounded"
+                                    data-id="{{ hs.id }}"
+                                    data-hoten="{{ hs.hoVaTen }}"
+                                    data-tendangnhap="{{ hs.tenDangNhap }}"
+                                    data-email="{{ hs.email }}"
+                                    data-gioitinh="{{ hs.gioiTinh }}">
+                                    Sửa
+                                </button>
+                                <form action="{{ url_for('xoa_hoc_sinh_khoi_lop', id_lop=lop_hoc.id, id_hoc_sinh=hs.id) }}" method="post" onsubmit="return confirm('Bạn muốn xóa học sinh này khỏi lớp?');">
+                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-2 rounded">Xóa khỏi lớp</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">Chưa có học sinh nào trong lớp.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="modal-sua" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-4">Chỉnh Sửa Thông Tin Học Sinh</h2>
+            <form id="form-sua" method="post">
+                <input type="hidden" name="id_lop" value="{{ lop_hoc.id }}">
+                <div class="mb-4">
+                    <label for="ho-va-ten" class="block text-gray-700 text-sm font-bold mb-2">Họ và Tên:</label>
+                    <input type="text" id="ho-va-ten" name="ho_va_ten" required class="w-full shadow border rounded py-2 px-3">
+                </div>
+                
+                <div class="mb-4">
+                    <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                    <input type="email" id="email" name="email" required class="w-full shadow border rounded py-2 px-3">
+                </div>
+                <div class="mb-4">
+                    <label for="gioi-tinh" class="block text-gray-700 text-sm font-bold mb-2">Giới tính:</label>
+                    <select id="gioi-tinh" name="gioi_tinh" class="w-full shadow border rounded py-2 px-3">
+                        <option value="Nam">Nam</option>
+                        <option value="Nu">Nữ</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Hủy</button>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const modal = document.getElementById('modal-sua');
+        const formSua = document.getElementById('form-sua');
+
+        function moModalSua(idHocSinh, hoTen, email, gioiTinh) {
+            formSua.action = `/chinh-sua-hoc-sinh/${idHocSinh}`;
+            document.getElementById('ho-va-ten').value = hoTen;
+            document.getElementById('email').value = email;
+            document.getElementById('gioi-tinh').value = gioiTinh;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function dongModalSua() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        
+        const editButtons = document.querySelectorAll('.js-edit-button');
+        editButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const hoTen = this.dataset.hoten;
+                // Tên đăng nhập không cần dùng ở đây nữa, nhưng vẫn tồn tại trong data-tendangnhap
+                const email = this.dataset.email;
+                const gioiTinh = this.dataset.gioitinh;
+                
+                moModalSua(id, hoTen, email, gioiTinh);
+            });
+        });
+
+        const cancelButton = modal.querySelector('button[type="button"]');
+        cancelButton.addEventListener('click', dongModalSua);
+        
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                dongModalSua();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape" && !modal.classList.contains('hidden')) {
+                dongModalSua();
+            }
+        });
+
+        const flashMessages = document.querySelectorAll('.flash-message');
+        flashMessages.forEach(function(message) {
+            setTimeout(function() {
+                message.style.transition = 'opacity 0.5s ease';
+                message.style.opacity = '0';
+                
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            }, 2000); 
+        });
+    });
+    </script>
+</body>
+</html>

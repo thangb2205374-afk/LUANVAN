@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tạo Bài Kiểm Tra Mới</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="flex items-center justify-between h-16"><div class="text-sm"><a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('tao_bai_kiem_tra', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">Bài Kiểm Tra</a><span class="mx-1 text-gray-400">/</span><span class="text-gray-600">Tạo Mới</span></div><div><a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a></div></div></div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        <form id="form-tao-bkt" method="post" action="{{ url_for('tao_bai_kiem_tra_moi', id_lop=lop_hoc.id) }}">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-4xl font-extrabold text-gray-900">Thiết Lập Bài Kiểm Tra Mới</h1>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-lg">
+                    Lưu Bài Kiểm Tra
+                </button>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="p-4 mb-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% else %} bg-blue-100 text-blue-700 {% endif %}" role="alert">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-lg space-y-6 h-fit sticky top-10">
+                    <div><label for="ten_bai_kiem_tra" class="block text-sm font-medium text-gray-700">Tên bài kiểm tra</label><input type="text" name="ten_bai_kiem_tra" id="ten_bai_kiem_tra" value="{{ form_data.ten_bai_kiem_tra }}" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                    <div><label for="thong_tin_bai_kiem_tra" class="block text-sm font-medium text-gray-700">Thông tin / Mô tả</label><textarea name="thong_tin_bai_kiem_tra" id="thong_tin_bai_kiem_tra" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">{{ form_data.thong_tin_bai_kiem_tra }}</textarea></div>
+                    <div><label for="thoi_gian_lam_bai" class="block text-sm font-medium text-gray-700">Thời gian (phút)</label><input type="number" name="thoi_gian_lam_bai" id="thoi_gian_lam_bai" value="{{ form_data.thoi_gian_lam_bai }}" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                    <div><label for="mat_khau" class="block text-sm font-medium text-gray-700">Mật khẩu (bỏ trống nếu không cần)</label><input type="text" name="mat_khau" id="mat_khau" value="{{ form_data.mat_khau }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                    <div><label for="so_lan_toi_da" class="block text-sm font-medium text-gray-700">Số lần làm bài tối đa</label><input type="number" name="so_lan_toi_da" id="so_lan_toi_da" value="{{ form_data.so_lan_toi_da }}" min="1" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                    <div class="border-t pt-4"><p class="text-sm text-gray-600">Số câu đã chọn: <strong id="so-cau-da-chon" class="text-blue-600 text-lg">0</strong></p><p class="text-sm text-gray-600">Tổng điểm: <strong id="tong-diem" class="text-blue-600 text-lg">0</strong></p></div>
+                </div>
+
+                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-bold mb-4">Chọn câu hỏi từ ngân hàng của bạn</h2>
+                    
+                    <div class="mb-6 bg-gray-50 p-3 rounded-lg flex items-center space-x-2">
+                        <span class="font-semibold text-gray-600 text-sm">Lọc:</span>
+                        <a href="{{ url_for('tao_bai_kiem_tra_moi', id_lop=lop_hoc.id, loai='TatCa') }}" class="filter-link px-3 py-1 text-sm rounded-full transition-colors {{ 'bg-blue-600 text-white' if loai_filter_hien_tai == 'TatCa' else 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">Tất cả</a>
+                        <a href="{{ url_for('tao_bai_kiem_tra_moi', id_lop=lop_hoc.id, loai='TracNghiem') }}" class="filter-link px-3 py-1 text-sm rounded-full transition-colors {{ 'bg-blue-600 text-white' if loai_filter_hien_tai == 'TracNghiem' else 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">Trắc nghiệm</a>
+                        <a href="{{ url_for('tao_bai_kiem_tra_moi', id_lop=lop_hoc.id, loai='DungSaiNhieuY') }}" class="filter-link px-3 py-1 text-sm rounded-full transition-colors {{ 'bg-blue-600 text-white' if loai_filter_hien_tai == 'DungSaiNhieuY' else 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">Đúng/Sai</a>
+                        <a href="{{ url_for('tao_bai_kiem_tra_moi', id_lop=lop_hoc.id, loai='TraLoiNgan') }}" class="filter-link px-3 py-1 text-sm rounded-full transition-colors {{ 'bg-blue-600 text-white' if loai_filter_hien_tai == 'TraLoiNgan' else 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">Trả lời ngắn</a>
+                    </div>
+
+                    <div class="space-y-2" id="danh-sach-cau-hoi">
+                        {% for cau_hoi in danh_sach_cau_hoi %}
+                        <div class="border rounded-lg has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 transition-colors">
+                            <div class="p-4 flex items-start space-x-4">
+                                <input type="checkbox" name="cau_hoi_ids" value="{{ cau_hoi.id }}" class="cau-hoi-checkbox h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1 flex-shrink-0">
+                                <div class="flex-grow">
+                                    <span class="text-xs font-semibold py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                                        {{ "Trắc nghiệm" if cau_hoi.loaiCauHoi == 'TracNghiem' else "Đúng/Sai" if cau_hoi.loaiCauHoi == 'DungSaiNhieuY' else "Trả lời ngắn" }}
+                                    </span>
+                                    <div class="text-gray-800 mt-1">{{ cau_hoi.noiDung | safe }}</div>
+                                </div>
+                                <div class="flex-shrink-0 w-24 flex justify-end">
+                                    <input type="number" name="diem_cau_hoi_{{ cau_hoi.id }}" id="diem_cau_hoi_{{ cau_hoi.id }}" value="1.0" step="any" class="diem-input w-20 border border-gray-300 rounded-md shadow-sm py-1 px-2 text-center disabled:bg-gray-100 disabled:cursor-not-allowed" disabled>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <button type="button" class="toggle-answers-btn p-1 rounded-full hover:bg-gray-200">
+                                        <svg class="w-5 h-5 text-gray-500 transition-transform transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="answers-container hidden border-t border-gray-200 mx-4 mb-2 pt-2 pl-8 space-y-2">
+                                {% for pa in cau_hoi.phuongAn %}
+                                <div class="flex items-start text-sm p-1 rounded-md 
+                                    {% if pa.laDapAnDung %} text-green-800 font-semibold 
+                                    {% else %} text-gray-600 {% endif %}">
+                                    
+                                    {% if cau_hoi.loaiCauHoi == 'TracNghiem' %}
+                                        <span class="mr-2 h-5 flex items-center">
+                                            {% if pa.laDapAnDung %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                            {% else %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2" /></svg>
+                                            {% endif %}
+                                        </span>
+                                    {% elif cau_hoi.loaiCauHoi == 'DungSaiNhieuY' %}
+                                         <span class="mr-2 h-5 flex items-center">
+                                            {% if pa.laDapAnDung %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                            {% else %}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                                            {% endif %}
+                                        </span>
+                                    {% else %}
+                                        <span class="mr-2 h-5 flex items-center text-green-600 font-bold">✓</span>
+                                    {% endif %}
+                                    <p>{{ pa.noiDung | safe }}</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-10"><p class="text-gray-500">Không có câu hỏi nào thuộc loại này.</p><a href="{{ url_for('tao_bai_kiem_tra_moi', id_lop=lop_hoc.id, loai='TatCa') }}" class="text-blue-600 hover:underline">Xem tất cả câu hỏi</a></div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const containerCauHoi = document.getElementById('danh-sach-cau-hoi');
+            
+            // Logic ẩn hiện đáp án
+            containerCauHoi.addEventListener('click', function(event) {
+                const toggleBtn = event.target.closest('.toggle-answers-btn');
+                if (!toggleBtn) return;
+                
+                const questionContainer = toggleBtn.closest('.border.rounded-lg');
+                const answersContainer = questionContainer.querySelector('.answers-container');
+                const arrowIcon = toggleBtn.querySelector('svg');
+
+                answersContainer.classList.toggle('hidden');
+                arrowIcon.classList.toggle('rotate-180');
+            });
+
+            // --- Toàn bộ script cũ để lưu trạng thái vẫn được giữ nguyên ---
+            const form = document.getElementById('form-tao-bkt');
+            const soCauDaChonSpan = document.getElementById('so-cau-da-chon');
+            const tongDiemSpan = document.getElementById('tong-diem');
+            const KEY_STORAGE = 'selectedQuestions_{{ lop_hoc.id }}_new';
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('loai')) {
+                sessionStorage.removeItem(KEY_STORAGE);
+            }
+            function getSelectedQuestions() {
+                const data = sessionStorage.getItem(KEY_STORAGE);
+                return data ? JSON.parse(data) : {};
+            }
+            function saveSelectedQuestions(data) {
+                sessionStorage.setItem(KEY_STORAGE, JSON.stringify(data));
+            }
+            function capNhatThongKe() {
+                let selectedQuestions = getSelectedQuestions();
+                containerCauHoi.querySelectorAll('input.cau-hoi-checkbox').forEach(checkbox => {
+                    const id = checkbox.value;
+                    const diemInput = document.getElementById(`diem_cau_hoi_${id}`);
+                    if (checkbox.checked) {
+                        selectedQuestions[id] = parseFloat(diemInput.value) || 0;
+                    } else {
+                        delete selectedQuestions[id];
+                    }
+                });
+                let soCauDaChon = 0; let tongDiem = 0;
+                for (const id in selectedQuestions) { soCauDaChon++; tongDiem += selectedQuestions[id]; }
+                soCauDaChonSpan.textContent = soCauDaChon;
+                tongDiemSpan.textContent = tongDiem.toFixed(2).replace(/\.00$/, '');
+                saveSelectedQuestions(selectedQuestions);
+            }
+            function khoiPhucTrangThai() {
+                const selectedQuestions = getSelectedQuestions();
+                containerCauHoi.querySelectorAll('input.cau-hoi-checkbox').forEach(checkbox => {
+                    const id = checkbox.value;
+                    if (selectedQuestions.hasOwnProperty(id)) {
+                        checkbox.checked = true;
+                        const diemInput = document.getElementById(`diem_cau_hoi_${id}`);
+                        diemInput.value = selectedQuestions[id];
+                        diemInput.disabled = false;
+                    }
+                });
+                capNhatThongKe();
+            }
+            containerCauHoi.addEventListener('change', function(event) {
+                if (event.target.classList.contains('cau-hoi-checkbox')) {
+                    const checkbox = event.target;
+                    const diemInput = document.getElementById(`diem_cau_hoi_${checkbox.value}`);
+                    diemInput.disabled = !checkbox.checked;
+                }
+                capNhatThongKe();
+            });
+            containerCauHoi.addEventListener('input', function(event) {
+                if (event.target.classList.contains('diem-input')) { capNhatThongKe(); }
+            });
+            const filterLinks = document.querySelectorAll('a.filter-link');
+            const formInputs = {
+                ten_bai_kiem_tra: document.getElementById('ten_bai_kiem_tra'),
+                thong_tin_bai_kiem_tra: document.getElementById('thong_tin_bai_kiem_tra'),
+                thoi_gian_lam_bai: document.getElementById('thoi_gian_lam_bai'),
+                mat_khau: document.getElementById('mat_khau'),
+                so_lan_toi_da: document.getElementById('so_lan_toi_da')
+            };
+            filterLinks.forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault(); capNhatThongKe();
+                    let newUrl = this.href;
+                    for (const key in formInputs) { if (formInputs[key].value) { newUrl += `&${key}=${encodeURIComponent(formInputs[key].value)}`; } }
+                    window.location.href = newUrl;
+                });
+            });
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); 
+                const selectedQuestions = getSelectedQuestions();
+                for (const questionId in selectedQuestions) {
+                    if (!document.querySelector(`input.cau-hoi-checkbox[value="${questionId}"]`)) {
+                        const points = selectedQuestions[questionId];
+                        const hiddenIdInput = document.createElement('input'); hiddenIdInput.type = 'hidden'; hiddenIdInput.name = 'cau_hoi_ids'; hiddenIdInput.value = questionId; form.appendChild(hiddenIdInput);
+                        const hiddenDiemInput = document.createElement('input'); hiddenDiemInput.type = 'hidden'; hiddenDiemInput.name = `diem_cau_hoi_${questionId}`; hiddenDiemInput.value = points; form.appendChild(hiddenDiemInput);
+                    }
+                }
+                form.submit();
+            });
+            khoiPhucTrangThai();
+        });
+    </script>
+</body>
+</html>

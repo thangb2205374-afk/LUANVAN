@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang Học Sinh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <span class="font-bold text-xl text-blue-600">Bảng điều khiển</span>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">Chào, {{ session.ho_va_ten }}</span>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for category, message in messages %}<div class="p-4 mb-4 text-sm rounded-lg {% if category == 'error' %} bg-red-100 text-red-700 {% elif category == 'warning' %} bg-yellow-100 text-yellow-700 {% else %} bg-blue-100 text-blue-700 {% endif %}" role="alert">{{ message }}</div>{% endfor %}{% endif %}
+        {% endwith %}
+
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Tham gia lớp học mới</h2>
+            <form action="{{ url_for('tham_gia_lop') }}" method="post" class="flex items-center space-x-4">
+                <input type="text" name="ma_lop" placeholder="Nhập mã lớp học..." required
+                       class="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Tham gia
+                </button>
+            </form>
+        </div>
+
+        <div>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Các lớp học của bạn</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for lop in danh_sach_lop %}
+                <a href="{{ url_for('chi_tiet_lop_hoc_sinh', id_lop=lop.id) }}" class="block bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">{{ lop.tenLop }}</h3>
+                        <p class="text-gray-600 text-sm">Giáo viên: {{ lop.tenGiaoVien }}</p>
+                    </div>
+                </a>
+                {% else %}
+                <p class="text-gray-500 col-span-full">Bạn chưa tham gia lớp học nào. Hãy nhập mã lớp ở trên để bắt đầu!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

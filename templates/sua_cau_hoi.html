@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sửa Câu Hỏi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+    <style>
+        .ck-editor__editable_inline { min-height: 150px; }
+        #noi_dung_cau_hoi + .ck-editor .ck-editor__editable_inline { min-height: 200px; }
+        .math-button { background-color: #f3f4f6; border: 1px solid #d1d5db; padding: 4px 8px; border-radius: 4px; font-family: monospace; cursor: pointer; }
+        .math-button:hover { background-color: #e5e7eb; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-md">
+        </nav>
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="text-center mb-10"><h1 class="text-4xl font-extrabold text-gray-900">Chỉnh Sửa Câu Hỏi</h1></div>
+
+        <form id="form-cau-hoi" action="{{ url_for('sua_cau_hoi', id_lop=lop_hoc.id, id_cau_hoi=cau_hoi.id) }}" method="post" class="bg-white p-8 rounded-lg shadow-lg space-y-8">
+            
+            <div>
+                <label class="block text-lg font-bold text-gray-800 mb-2">1. Loại câu hỏi:</label>
+                <p class="w-full p-2 border rounded-md bg-gray-100 text-gray-500">
+                    {{ "Trắc nghiệm (4 đáp án, 1 lựa chọn)" if cau_hoi.loaiCauHoi == 'TracNghiem' else "Trắc nghiệm (Đúng/Sai nhiều ý)" if cau_hoi.loaiCauHoi == 'DungSaiNhieuY' else "Trả lời ngắn" }}
+                </p>
+                <input type="hidden" name="loai_cau_hoi" value="{{ cau_hoi.loaiCauHoi }}">
+            </div>
+
+            <div>
+                <label for="noi_dung_cau_hoi" class="block text-lg font-bold text-gray-800 mb-2">2. Nội dung câu hỏi:</label>
+                <textarea name="noi_dung_cau_hoi" id="noi_dung_cau_hoi"></textarea>
+            </div>
+            
+            <hr>
+
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-4">3. Các phương án trả lời:</h3>
+                
+                {% if cau_hoi.loaiCauHoi == 'TracNghiem' %}
+                <div id="loai-trac-nghiem" class="space-y-4">
+                    {% for i in range(4) %}
+                    <div class="flex items-start space-x-4">
+                        <input type="radio" name="dap_an_dung_tn" value="pa_{{i+1}}" class="h-5 w-5 mt-4" {{ 'checked' if cau_hoi.phuongAn[i].laDapAnDung else '' }}>
+                        <label class="font-semibold mt-4">{{ ['A.', 'B.', 'C.', 'D.'][i] }}</label>
+                        <div class="flex-grow"><textarea name="phuong_an_{{i+1}}" id="phuong_an_{{i+1}}"></textarea></div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if cau_hoi.loaiCauHoi == 'DungSaiNhieuY' %}
+                <div id="loai-dung-sai" class="space-y-4">
+                     {% for i in range(4) %}
+                     <div class="flex items-start space-x-4">
+                        <div class="flex-grow"><textarea name="y_{{i+1}}" id="y_{{i+1}}"></textarea></div>
+                        <select name="dap_an_y_{{i+1}}" class="p-2 border rounded-md self-center">
+                            <option value="Dung" {{ 'selected' if cau_hoi.phuongAn[i].laDapAnDung else '' }}>Đúng</option>
+                            <option value="Sai" {{ 'selected' if not cau_hoi.phuongAn[i].laDapAnDung else '' }}>Sai</option>
+                        </select>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if cau_hoi.loaiCauHoi == 'TraLoiNgan' %}
+                <div id="loai-tra-loi-ngan">
+                    <input type="text" name="dap_an_ngan" class="w-full p-2 border rounded-md" value="{{ cau_hoi.phuongAn[0].noiDung | safe if cau_hoi.phuongAn else '' }}">
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="pt-6 flex justify-between">
+                <a href="{{ url_for('xem_cau_hoi_da_tao', id_lop=lop_hoc.id) }}" class="text-gray-600 hover:text-gray-900 font-bold py-3 px-6 rounded-lg">Hủy</a>
+                <button type="submit" class="bg-green-600 hover:bg-green-800 text-white font-bold py-3 px-6 rounded-lg text-lg">Lưu Thay Đổi</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // [SỬA LỖI] Lấy dữ liệu câu hỏi từ Flask và chuyển thành đối tượng JavaScript
+            const cauHoiData = {{ cau_hoi | tojson }};
+
+            let activeEditor = null;
+            const editors = {};
+
+            // ... (Hàm insertMathTemplate và buildMathToolbar giữ nguyên)
+            function insertMathTemplate(template) {
+                if (!activeEditor) {
+                    alert("Vui lòng click vào một ô soạn thảo trước khi chèn công thức!");
+                    return;
+                }
+                activeEditor.model.change(writer => {
+                    const insertPosition = activeEditor.model.document.selection.getFirstPosition();
+                    writer.insertText(`\\( ${template} \\)`, insertPosition);
+                });
+            }
+
+            function buildMathToolbar(editorId) {
+                const editorElement = document.getElementById(editorId);
+                if (!editorElement) return;
+                const toolbarContainer = document.createElement('div');
+                toolbarContainer.className = 'flex flex-wrap gap-2 mt-2';
+                const templates = { 'Phân số': '\\frac{ tử }{ mẫu }', 'Mũ': ' a^{b} ', 'Chỉ số dưới': ' a_{b} ', 'Căn bậc hai': '\\sqrt{ n }', 'Tổng ∑': '\\sum_{i=1}^{n}', 'Tích phân ∫': '\\int_{a}^{b}', 'Giới hạn lim': '\\lim_{x\\to\\infty}', '→': '\\rightarrow', '±': '\\pm', '×': '\\times', '÷': '\\div', };
+                for (const key in templates) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'math-button';
+                    button.textContent = key;
+                    button.onclick = () => insertMathTemplate(templates[key]);
+                    toolbarContainer.appendChild(button);
+                }
+                editorElement.parentNode.insertBefore(toolbarContainer, editorElement.nextSibling);
+            }
+            
+            // Hàm tạo một trình soạn thảo và điền dữ liệu
+            function createEditor(id, content = '') {
+                const element = document.getElementById(id);
+                if (element) {
+                    ClassicEditor.create(element, { toolbar: ['undo', 'redo', '|', 'bold', 'italic'] })
+                        .then(editor => {
+                            // [SỬA LỖI] Sau khi tạo xong, chủ động điền dữ liệu vào
+                            editor.setData(content);
+                            editors[id] = editor;
+                            editor.editing.view.document.on('focus', () => { activeEditor = editor; });
+                        })
+                        .catch(error => console.error(error));
+                }
+            }
+
+            // --- KHỞI TẠO ---
+            // 1. Tạo editor và điền dữ liệu cho câu hỏi chính
+            createEditor('noi_dung_cau_hoi', cauHoiData.noiDung);
+            buildMathToolbar('noi_dung_cau_hoi');
+
+            // 2. Tạo editor và điền dữ liệu cho các phương án tương ứng
+            if (cauHoiData.loaiCauHoi === 'TracNghiem') {
+                for (let i = 0; i < 4; i++) {
+                    const editorId = `phuong_an_${i+1}`;
+                    const content = cauHoiData.phuongAn[i] ? cauHoiData.phuongAn[i].noiDung : '';
+                    createEditor(editorId, content);
+                    buildMathToolbar(editorId);
+                }
+            } else if (cauHoiData.loaiCauHoi === 'DungSaiNhieuY') {
+                for (let i = 0; i < 4; i++) {
+                    const editorId = `y_${i+1}`;
+                    const content = cauHoiData.phuongAn[i] ? cauHoiData.phuongAn[i].noiDung : '';
+                    createEditor(editorId, content);
+                    buildMathToolbar(editorId);
+                }
+            }
+            
+            // 3. Hiển thị đúng khu vực đáp án
+            document.getElementById('loai-trac-nghiem').style.display = (cauHoiData.loaiCauHoi === 'TracNghiem') ? 'block' : 'none';
+            document.getElementById('loai-dung-sai').style.display = (cauHoiData.loaiCauHoi === 'DungSaiNhieuY') ? 'block' : 'none';
+            document.getElementById('loai-tra-loi-ngan').style.display = (cauHoiData.loaiCauHoi === 'TraLoiNgan') ? 'block' : 'none';
+        });
+    </script>
+</body>
+</html>

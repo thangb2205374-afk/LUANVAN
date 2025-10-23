@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi Tiết: {{ bai_kiem_tra.tenBaiKiemTra }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="flex items-center justify-between h-16"><div class="text-sm"><a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('tao_bai_kiem_tra', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">Bài Kiểm Tra</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('danh_sach_bai_kiem_tra', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">Danh Sách</a><span class="mx-1 text-gray-400">/</span><span class="text-gray-600">Chi Tiết</span></div><div><a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a></div></div></div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        
+        <div class="bg-white p-8 rounded-lg shadow-lg mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-gray-900">{{ bai_kiem_tra.tenBaiKiemTra }}</h1>
+                    <p class="mt-2 text-gray-600">{{ bai_kiem_tra.thongTin or "Không có mô tả chi tiết."}}</p>
+                </div>
+                <a href="{{ url_for('sua_bai_kiem_tra', id_lop=lop_hoc.id, id_bkt=bai_kiem_tra.id) }}" class="ml-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded whitespace-nowrap">
+                    Chỉnh sửa
+                </a>
+            </div>
+            <div class="mt-6 border-t pt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                    <span class="block text-sm text-gray-500">Số câu hỏi</span>
+                    <span class="block text-lg font-bold text-gray-800">{{ danh_sach_cau_hoi|length }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm text-gray-500">Thời gian</span>
+                    <span class="block text-lg font-bold text-gray-800">{{ bai_kiem_tra.thoiGianLamBai }} phút</span>
+                </div>
+                <div>
+                    <span class="block text-sm text-gray-500">Mật khẩu</span>
+                    <span class="block text-lg font-bold text-gray-800">{{ bai_kiem_tra.matKhau or "Không" }}</span>
+                </div>
+                <div>
+                    <span class="block text-sm text-gray-500">Tổng điểm</span>
+                    <span class="block text-lg font-bold text-gray-800">{{ danh_sach_cau_hoi | sum(attribute='diem') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Nội dung bài kiểm tra</h2>
+        <div class="space-y-6">
+            {% for cau_hoi in danh_sach_cau_hoi %}
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex justify-between items-start border-b pb-4 mb-4">
+                    <div class="flex-grow">
+                        <div class="flex items-center mb-2">
+                             <span class="font-bold text-gray-800 mr-3">Câu {{ loop.index }}:</span>
+                             <span class="text-xs font-semibold py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                                {{ "Trắc nghiệm" if cau_hoi.loaiCauHoi == 'TracNghiem' else "Đúng/Sai" if cau_hoi.loaiCauHoi == 'DungSaiNhieuY' else "Trả lời ngắn" }}
+                            </span>
+                        </div>
+                        <div class="text-gray-800 text-lg">{{ cau_hoi.noiDung | safe }}</div>
+                    </div>
+                    <div class="ml-4 text-right flex-shrink-0">
+                        <span class="font-bold text-blue-600">{{ cau_hoi.diem }} điểm</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    {% for pa in cau_hoi.phuongAn %}
+                        <div class="flex items-start p-2 rounded-md {% if pa.laDapAnDung %} bg-green-100 text-green-900 font-medium {% endif %}">
+                            <span class="mr-3 mt-1">
+                                {% if pa.laDapAnDung %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                                {% elif cau_hoi.loaiCauHoi == 'DungSaiNhieuY' %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.607a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2" /></svg>
+                                {% endif %}
+                            </span>
+                            <div class="text-gray-700">{{ pa.noiDung | safe }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

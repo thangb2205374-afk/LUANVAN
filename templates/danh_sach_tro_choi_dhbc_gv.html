@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Trò chơi ĐHBC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-sm">
+                    <a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <span class="text-gray-600">Trò chơi ĐHBC</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">Chào, {{ session.ho_va_ten }}</span>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-4xl mx-auto py-10">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-extrabold text-gray-900">Quản lý Trò chơi ĐHBC</h1>
+                <p class="mt-1 text-lg text-gray-600">Lớp: {{ lop_hoc.tenLop }}</p>
+            </div>
+            <a href="{{ url_for('tao_tro_choi_dhbc', id_lop=lop_hoc.id) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">
+                + Tạo trò chơi mới
+            </a>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message p-3 mb-4 text-sm rounded-lg {{ 'bg-blue-100 text-blue-700' if category == 'success' else 'bg-red-100 text-red-700' }}" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="space-y-4">
+            {% for game in danh_sach_game %}
+            <div class="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">{{ game.tenTroChoi }}</h2>
+                    <div class="flex items-center space-x-4 text-sm text-gray-500 mt-2">
+                        <span>Ngày tạo: {{ game.ngayTao.strftime('%d-%m-%Y') }}</span>
+                        <span class="text-gray-300">|</span>
+                        <span>
+                            Thời gian: 
+                            <span class="font-medium text-gray-700">{{ (game.thoiGianChoi ~ ' phút') if game.thoiGianChoi else 'Không giới hạn' }}</span>
+                        </span>
+                        <span class="text-gray-300">|</span>
+                        <span>
+                            Mật khẩu: 
+                            <span class="font-medium text-gray-700">{{ 'Có' if game.matKhau else 'Không' }}</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <a href="{{ url_for('thong_ke_dhbc', id_tro_choi=game.id) }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded text-sm">Kết quả</a>
+                    <a href="{{ url_for('sua_tro_choi_dhbc', id_tro_choi=game.id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-3 rounded text-sm">Sửa</a>
+                    <form method="post" action="{{ url_for('xoa_tro_choi_dhbc', id_tro_choi=game.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn trò chơi này không?');">
+                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded text-sm">Xóa</button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center bg-white p-8 rounded-lg shadow-md">
+                <p class="text-gray-500">Chưa có trò chơi nào được tạo cho lớp này.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            
+            flashMessages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.transition = 'opacity 0.5s ease';
+                    message.style.opacity = '0';
+                    
+                    setTimeout(function() {
+                        message.remove();
+                    }, 500);
+
+                }, 2000); 
+            });
+        });
+    </script>
+</body>
+</html>

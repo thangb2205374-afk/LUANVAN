@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Bài Kiểm Tra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-sm">
+                    <a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a>
+                    <span class="mx-1 text-gray-400">/</span>
+                    <span class="text-gray-600">Bài Kiểm Tra</span>
+                </div>
+                <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-gray-900">Quản lý Bài Kiểm Tra</h1>
+            <p class="mt-2 text-lg text-gray-600">Chọn một chức năng để tiếp tục</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <a href="{{ url_for('ngan_hang_cau_hoi', id_lop=lop_hoc.id) }}" 
+               class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Ngân hàng câu hỏi 🏦</h2>
+                <p class="text-gray-600">Tạo mới, quản lý và chỉnh sửa các câu hỏi cho riêng bạn.</p>
+                <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+                    Quản lý câu hỏi →
+                </span>
+            </a>
+
+            <a href="{{ url_for('tao_bai_kiem_tra_moi', id_lop=lop_hoc.id) }}" 
+               class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Tạo bài kiểm tra mới 📝</h2>
+                <p class="text-gray-600">Thiết lập một bài kiểm tra mới từ ngân hàng câu hỏi của bạn.</p>
+                <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+                    Tạo ngay →
+                </span>
+            </a>
+
+            <a href="{{ url_for('danh_sach_bai_kiem_tra', id_lop=lop_hoc.id) }}" 
+               class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 md:col-span-2">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Danh sách & Thống kê 📊</h2>
+                <p class="text-gray-600">Xem lại, chỉnh sửa, xóa và xem thống kê các bài kiểm tra đã tạo.</p>
+                <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+                    Xem danh sách →
+                </span>
+            </a>
+
+        </div>
+    </main>
+</body>
+</html>

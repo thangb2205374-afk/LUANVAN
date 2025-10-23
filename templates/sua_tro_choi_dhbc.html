@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sửa Trò Chơi ĐHBC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            transition: border-color 0.3s, background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .drop-zone.drag-over {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .preview-img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-sm">
+                    <a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-blue-600 hover:text-blue-800">Lớp của tôi</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('chi_tiet_lop', id_lop=lop_hoc.id) }}" class="font-bold text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a><span class="mx-1 text-gray-400">/</span><a href="{{ url_for('danh_sach_tro_choi_dhbc_gv', id_lop=lop_hoc.id) }}" class="font-bold text-blue-600 hover:text-blue-800">Trò chơi ĐHBC</a><span class="mx-1 text-gray-400">/</span><span class="text-gray-600">Chỉnh Sửa</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">Chào, {{ session.ho_va_ten }}</span>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-10">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8">Chỉnh Sửa Trò Chơi: {{ tro_choi.tenTroChoi }}</h1>
+        
+        <form method="post" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-lg">
+            <input type="hidden" name="cau_hoi_da_xoa" id="cau_hoi_da_xoa">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="md:col-span-3">
+                    <label for="ten_tro_choi" class="block text-lg font-bold text-gray-800 mb-2">Tên trò chơi:</label>
+                    <input type="text" name="ten_tro_choi" id="ten_tro_choi" value="{{ tro_choi.tenTroChoi }}" required class="w-full p-2 border rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="thoi_gian_choi" class="block text-sm font-medium text-gray-700">Thời gian chơi (phút):</label>
+                    <input type="number" name="thoi_gian_choi" id="thoi_gian_choi" value="{{ tro_choi.thoiGianChoi or '' }}" placeholder="Bỏ trống nếu không giới hạn" class="mt-1 w-full p-2 border rounded-md shadow-sm">
+                </div>
+                <div>
+                    <label for="mat_khau_choi" class="block text-sm font-medium text-gray-700">Mật khẩu:</label>
+                    <input type="text" name="mat_khau_choi" id="mat_khau_choi" value="{{ tro_choi.matKhau or '' }}" placeholder="Bỏ trống nếu không cần" class="mt-1 w-full p-2 border rounded-md shadow-sm">
+                </div>
+            </div>
+            <hr class="my-8">
+
+            <div id="danh-sach-cau-hoi" class="space-y-6">
+                <h2 class="text-2xl font-bold text-gray-800">Các câu hỏi hiện tại:</h2>
+                {% for ch in danh_sach_cau_hoi %}
+                <div class="cau-hoi-item-cu border-2 border-dashed p-4 rounded-lg relative" id="cau-hoi-cu-{{ ch.id }}">
+                    <input type="hidden" name="id_cau_hoi_cu[]" value="{{ ch.id }}">
+                    <button type="button" class="xoa-cau-hoi-cu absolute -top-3 -right-3 text-red-500 bg-white rounded-full h-7 w-7 flex items-center justify-center border shadow-sm hover:bg-red-50" data-id="{{ ch.id }}">&times;</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                             <label class="block text-sm font-medium text-gray-700 mb-2">Ảnh hiện tại (Kéo ảnh mới vào để thay thế)</label>
+                             <label class="drop-zone w-full h-32 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 p-2">
+                                 <div class="placeholder-content hidden flex-col items-center justify-center text-center">
+                                     <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
+                                     <p class="text-sm text-gray-500"><span class="font-semibold">Nhấn để tải lên</span> hoặc kéo thả</p>
+                                 </div>
+                                 <img class="preview-img" src="{{ url_for('static', filename='uploads/dhbc/' + ch.tenFileAnh) }}" alt="Ảnh hiện tại"/>
+                                 <input type="file" name="anh_cau_hoi_cu_{{ ch.id }}" accept="image/*" class="hidden image-input">
+                            </label>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Đáp án:</label>
+                            <input type="text" name="dap_an_cu_{{ ch.id }}" value="{{ ch.dapAn }}" required class="w-full p-2 border rounded-md">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Gợi ý:</label>
+                            <input type="text" name="goi_y_cu_{{ ch.id }}" value="{{ ch.goiY or '' }}" class="w-full p-2 border rounded-md">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <hr class="my-8">
+            <h2 class="text-2xl font-bold text-gray-800">Thêm câu hỏi mới:</h2>
+            <div id="cau-hoi-moi-container" class="space-y-6 mt-4">
+            </div>
+
+            <div class="mt-8">
+                <button type="button" id="them-cau-hoi-moi" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">+ Thêm câu hỏi mới</button>
+            </div>
+            <div class="mt-10 text-right">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg text-lg">Lưu Thay Đổi</button>
+            </div>
+        </form>
+    </main>
+
+    <template id="template-cau-hoi-moi">
+        <div class="cau-hoi-item-moi border-2 border-green-300 border-dashed p-4 rounded-lg relative">
+            <button type="button" class="xoa-cau-hoi-moi absolute -top-3 -right-3 text-red-500 bg-white rounded-full h-7 w-7 flex items-center justify-center border shadow-sm hover:bg-red-50">&times;</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">1. Kéo & Thả Ảnh hoặc Nhấn để Chọn</label>
+                    <label class="drop-zone w-full h-32 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 p-2">
+                        <div class="placeholder-content flex flex-col items-center justify-center text-center">
+                            <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
+                            <p class="text-sm text-gray-500"><span class="font-semibold">Nhấn để tải lên</span> hoặc kéo thả</p>
+                        </div>
+                        <img class="preview-img hidden" src="#" alt="Xem trước ảnh"/>
+                        <input type="file" name="anh_cau_hoi_moi[]" accept="image/*" required class="hidden image-input">
+                    </label>
+                </div> 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">2. Nhập đáp án:</label>
+                    <input type="text" name="dap_an_moi[]" required class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                     <label class="block text-sm font-medium text-gray-700 mb-1">3. Gợi ý (tùy chọn):</label>
+                     <input type="text" name="goi_y_moi[]" placeholder="Ví dụ: Đây là một loại trái cây" class="w-full p-2 border rounded-md">
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Logic cũ để xóa câu hỏi hiện tại
+            const inputCauHoiDaXoa = document.getElementById('cau_hoi_da_xoa');
+            document.getElementById('danh-sach-cau-hoi').addEventListener('click', function(event) {
+                if (event.target.matches('.xoa-cau-hoi-cu')) {
+                    const btn = event.target;
+                    const id = btn.dataset.id;
+                    const currentValue = inputCauHoiDaXoa.value;
+                    inputCauHoiDaXoa.value = currentValue ? `${currentValue},${id}` : id;
+                    document.getElementById(`cau-hoi-cu-${id}`).style.display = 'none';
+                }
+            });
+
+            // Logic cũ để thêm và xóa câu hỏi mới
+            const btnThemMoi = document.getElementById('them-cau-hoi-moi');
+            const containerMoi = document.getElementById('cau-hoi-moi-container');
+            const templateMoi = document.getElementById('template-cau-hoi-moi');
+            
+            btnThemMoi.addEventListener('click', function() {
+                const clone = templateMoi.content.cloneNode(true);
+                containerMoi.appendChild(clone);
+            });
+
+            containerMoi.addEventListener('click', function(event) {
+                if (event.target.classList.contains('xoa-cau-hoi-moi')) {
+                    event.target.closest('.cau-hoi-item-moi').remove();
+                }
+            });
+
+            // --- LOGIC KÉO THẢ ẢNH (DÙNG CHUNG CHO CẢ TRANG) ---
+            const mainContainer = document.querySelector('main');
+
+            function handleFile(file, dropZone) {
+                if (!file.type.startsWith('image/')){ alert('Chỉ chấp nhận file hình ảnh!'); return; }
+                const previewImg = dropZone.querySelector('.preview-img');
+                const fileInput = dropZone.querySelector('.image-input');
+                const placeholderContent = dropZone.querySelector('.placeholder-content');
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                fileInput.removeAttribute('required'); // Không bắt buộc nếu đã có ảnh cũ
+                const reader = new FileReader();
+                reader.onload = () => {
+                    previewImg.src = reader.result;
+                    previewImg.classList.remove('hidden');
+                    if (placeholderContent) placeholderContent.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            async function handleUrl(url, dropZone) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Không thể tải ảnh từ URL.');
+                    const blob = await response.blob();
+                    if (!blob.type.startsWith('image/')) throw new Error('URL không trỏ đến một file ảnh hợp lệ.');
+                    const fileName = url.substring(url.lastIndexOf('/') + 1) || 'image.png';
+                    const imageFile = new File([blob], fileName, { type: blob.type });
+                    handleFile(imageFile, dropZone);
+                } catch (error) {
+                    console.error('Lỗi khi xử lý URL ảnh:', error);
+                    alert('Đã xảy ra lỗi khi kéo ảnh từ URL.');
+                }
+            }
+
+            mainContainer.addEventListener('dragover', (e) => { e.preventDefault(); const dropZone = e.target.closest('.drop-zone'); if (dropZone) dropZone.classList.add('drag-over'); });
+            mainContainer.addEventListener('dragleave', (e) => { const dropZone = e.target.closest('.drop-zone'); if (dropZone) dropZone.classList.remove('drag-over'); });
+            mainContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const dropZone = e.target.closest('.drop-zone');
+                if (!dropZone) return;
+                dropZone.classList.remove('drag-over');
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleFile(e.dataTransfer.files[0], dropZone);
+                } else {
+                    const html = e.dataTransfer.getData('text/html');
+                    const match = html.match(/<img.*?src=["'](.*?)"/);
+                    const imageUrl = match ? match[1] : null;
+                    if (imageUrl) { handleUrl(imageUrl, dropZone); } 
+                    else { alert('Không tìm thấy ảnh hợp lệ để kéo vào.'); }
+                }
+            });
+            
+            mainContainer.addEventListener('change', function(event) {
+                if (event.target.classList.contains('image-input')) {
+                    const fileInput = event.target;
+                    const dropZone = fileInput.closest('.drop-zone');
+                    if (fileInput.files && fileInput.files[0]) {
+                        handleFile(fileInput.files[0], dropZone);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

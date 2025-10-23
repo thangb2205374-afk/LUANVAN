@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bài Đã Làm - {{ lop_hoc.tenLop }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div>
+                    <a href="{{ url_for('trang_hoc_sinh') }}" class="font-bold text-lg text-blue-600 hover:text-blue-800">Lớp của tôi</a><span class="mx-2 text-gray-500">/</span>
+                    <a href="{{ url_for('chi_tiet_lop_hoc_sinh', id_lop=lop_hoc.id) }}" class="text-lg text-blue-600 hover:text-blue-800">{{ lop_hoc.tenLop }}</a><span class="mx-2 text-gray-500">/</span>
+                    <span class="text-lg text-gray-700">Bài Đã Làm</span>
+                </div>
+                <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Đăng xuất</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900">Kết quả các bài đã làm</h1>
+        </div>
+        
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <table class="min-w-full leading-normal">
+                <thead>
+                    <tr>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Tên bài kiểm tra
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Thời gian nộp bài
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Điểm số
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kq in danh_sach_ket_qua %}
+                    <tr>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap">{{ kq.tenBaiKiemTra }}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <p class="text-gray-900 whitespace-no-wrap">{{ kq.thoiGianNopBai.strftime('%H:%M %d-%m-%Y') }}</p>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <span class="font-bold text-lg text-blue-600">{{ '%.2f'|format(kq.diemSo) }}</span>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
+                            <a href="{{ url_for('xem_chi_tiet_bai_lam', id_ket_qua=kq.id) }}" class="text-blue-600 hover:text-blue-900">Xem chi tiết</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-10 text-gray-500">
+                            Bạn chưa hoàn thành bài kiểm tra nào trong lớp này.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

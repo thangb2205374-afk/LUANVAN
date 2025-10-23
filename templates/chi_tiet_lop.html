@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết lớp: {{ lop_hoc.tenLop }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div>
+                    <a href="{{ url_for('trang_giao_vien') }}" class="font-bold text-lg text-blue-600 hover:text-blue-800">
+                        Lớp học của tôi
+                    </a>
+                    <span class="mx-2 text-gray-500">/</span>
+                    <span class="text-lg text-gray-700">{{ lop_hoc.tenLop }}</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">Chào, {{ session.ho_va_ten }}</span>
+                    <a href="{{ url_for('dang_xuat') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-extrabold text-gray-900">Quản lý Lớp: {{ lop_hoc.tenLop }}</h1>
+                <p class="mt-2 text-lg text-gray-600">Mã lớp: 
+                    <span class="font-mono bg-gray-200 text-blue-700 py-1 px-2 rounded-md">{{ lop_hoc.maLop }}</span>
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <a href="{{ url_for('quan_li_hoc_sinh', id_lop=lop_hoc.id) }}" 
+                   class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                        Quản lí học sinh 🧑‍🎓
+                    </h2>
+                    <p class="text-gray-600">
+                        Xem danh sách học sinh, xóa học sinh khỏi lớp, và các thao tác khác.
+                    </p>
+                    <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+                        Đi đến trang quản lí →
+                    </span>
+                </a>
+
+                <a href="{{ url_for('tao_bai_kiem_tra', id_lop=lop_hoc.id) }}"
+                   class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                        Tạo bài kiểm tra 📝
+                    </h2>
+                    <p class="text-gray-600">
+                        Thiết kế bài kiểm tra trắc nghiệm, tự luận với nhiều tùy chọn cài đặt.
+                    </p>
+                    <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+                        Bắt đầu tạo →
+                    </span>
+                </a>
+
+                <a href="{{ url_for('danh_sach_tro_choi_dhbc_gv', id_lop=lop_hoc.id) }}"
+                   class="group block bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                        Tạo trò chơi ĐHBC 🖼️
+                    </h2>
+                    <p class="text-gray-600">
+                        Soạn các câu hỏi Đuổi Hình Bắt Chữ vui nhộn để ôn tập kiến thức.
+                    </p>
+                    <span class="mt-4 inline-block font-semibold text-blue-600 group-hover:underline">
+                        Soạn trò chơi →
+                    </span>
+                </a>
+
+            </div>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bắt Đầu: {{ bai_kiem_tra.tenBaiKiemTra }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <main class="max-w-xl w-full bg-white p-8 rounded-lg shadow-lg text-center">
+        
+        <h1 class="text-3xl font-extrabold text-gray-900">{{ bai_kiem_tra.tenBaiKiemTra }}</h1>
+        <p class="mt-2 text-gray-600">{{ bai_kiem_tra.thongTin or "Hãy đọc kỹ các thông tin dưới đây trước khi bắt đầu."}}</p>
+        
+        <div class="mt-6 border-t pt-4 grid grid-cols-2 gap-4">
+            <div>
+                <span class="block text-sm text-gray-500">Lớp</span>
+                <span class="block text-lg font-bold text-gray-800">{{ lop_hoc.tenLop }}</span>
+            </div>
+            <div>
+                <span class="block text-sm text-gray-500">Thời gian làm bài</span>
+                <span class="block text-lg font-bold text-gray-800">{{ bai_kiem_tra.thoiGianLamBai }} phút</span>
+            </div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message p-3 my-4 text-sm rounded-lg bg-red-100 text-red-700" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" action="{{ url_for('bat_dau_kiem_tra', id_lop=lop_hoc.id, id_bkt=bai_kiem_tra.id) }}" class="mt-6">
+            {% if bai_kiem_tra.matKhau %}
+            <div>
+                <label for="mat_khau" class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu bài kiểm tra</label>
+                <input type="password" name="mat_khau" id="mat_khau" required
+                       class="w-full shadow-sm border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            {% endif %}
+
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg mt-6">
+                Bắt Đầu Làm Bài
+            </button>
+
+            <a href="{{ url_for('lam_bai_kiem_tra', id_lop=lop_hoc.id) }}" class="block mt-4 text-sm text-gray-600 hover:underline">
+                Quay lại danh sách
+            </a>
+        </form>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            
+            flashMessages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.transition = 'opacity 0.5s ease';
+                    message.style.opacity = '0';
+                    
+                    setTimeout(function() {
+                        message.remove();
+                    }, 500);
+
+                }, 2000); 
+            });
+        });
+    </script>
+</body>
+</html>
