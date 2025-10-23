@@ -36,7 +36,7 @@ def ket_noi_db():
         host=os.getenv("DB_HOST", "shuttle.proxy.rlwy.net"),
         user=os.getenv("DB_USER", "root"),
         password=os.getenv("DB_PASSWORD", "vrdBSgzRhtLjSRkEIjnPLKJTLWXebVym"),
-        database=os.getenv("DB_NAME", "sever2"),
+        database=os.getenv("DB_NAME", "LUANVAN"),
         port=int(os.getenv("DB_PORT", 39810))
     )
 
