@@ -33,11 +33,11 @@ app.config['UPLOAD_FOLDER_DHBC'] = UPLOAD_FOLDER_DHBC
 # --- Cấu hình kết nối MySQL ---
 def ket_noi_db():
     return mysql.connector.connect(
-        host=os.getenv("DB_HOST", "localhost"),
+        host=os.getenv("DB_HOST", "shuttle.proxy.rlwy.net"),
         user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASSWORD", ""),
-        database=os.getenv("DB_NAME", "trochoi_tracnghiem"),
-        port=int(os.getenv("DB_PORT", 3306))
+        password=os.getenv("DB_PASSWORD", "vrdBSgzRhtLjSRkEIjnPLKJTLWXebVym"),
+        database=os.getenv("DB_NAME", "sever2"),
+        port=int(os.getenv("DB_PORT", 39810))
     )
 
 # --- Hàm tiện ích: Tạo mã lớp ngẫu nhiên ---
